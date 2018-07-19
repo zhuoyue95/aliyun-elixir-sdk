@@ -1,10 +1,10 @@
 defmodule Aliyun.STS do
   use Tesla
 
-  adapter(Tesla.Adapter.Hackney)
+  adapter Tesla.Adapter.Hackney
 
-  plug(Tesla.Middleware.BaseUrl, "https://sts.aliyuncs.com")
-  plug(Tesla.Middleware.JSON)
+  plug Tesla.Middleware.BaseUrl, "https://sts.aliyuncs.com"
+  plug Tesla.Middleware.JSON
 
   import Aliyun.Util
 
@@ -25,6 +25,7 @@ defmodule Aliyun.STS do
     get("/", query: query_params(role_arn))
   end
 
+  @spec get_token() :: {:ok, Tesla.Env.t()} | {:error, any()}
   def get_token() do
     query =
       Application.get_env(:aliyun, :default_role_arn)
