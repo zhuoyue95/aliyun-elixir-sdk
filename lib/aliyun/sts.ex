@@ -14,35 +14,36 @@ defmodule Aliyun.STS do
   # https://help.aliyun.com/document_detail/28761.html
 
   @type query :: %{public: Tesla.Env.param(), assume_role: Tesla.Env.param(), signature: binary()}
+  @type config :: %{arn: bitstring(), session_name: bitstring(), duration: integer()}
 
   @doc """
   You can pattern match the result with
   - `{:ok, %Tesla.Env{body: body, status: 200} = response}` to get `body["Credentials"]`
   - `{:ok, %Tesla.Env{status: 403} = response}` to return an `:not_authorised` error
   """
-  @spec get_token(binary()) :: {:ok, Tesla.Env.t()} | {:error, any()}
-  def get_token(role_arn) do
-    get("/", query: query_params(role_arn))
+  @spec get_token(bitstring(), bitstring(), integer()) :: {:ok, Tesla.Env.t()} | {:error, any()}
+  def get_token(role_arn, role_session_name \\ "default", duration \\ 3600) do
+    get("/", query: query_params(role_arn, role_session_name, duration))
   end
 
   @spec get_token() :: {:ok, Tesla.Env.t()} | {:error, any()}
   def get_token() do
     query =
       Application.get_env(:aliyun, :default_role_arn)
-      |> query_params()
+      |> query_params("default", 3600)
 
     get("/", query: query)
   end
 
-  @spec query_params(binary()) :: Tesla.Env.param()
-  def query_params(role_arn) do
+  @spec query_params(bitstring(), bitstring(), integer()) :: Tesla.Env.param()
+  def query_params(role_arn, role_session_name, duration) do
     now_datetime =
       Timex.now()
       |> Timex.shift(hours: 0)
 
     %{
       public: public_params(now_datetime),
-      assume_role: assume_role_params(role_arn),
+      assume_role: assume_role_params(role_arn, role_session_name, duration),
       signature: ""
     }
     |> gen_signature(now_datetime)
@@ -69,12 +70,13 @@ defmodule Aliyun.STS do
     ]
   end
 
-  @spec assume_role_params(binary()) :: Tesla.Env.param()
-  def assume_role_params(role_arn) do
+  @spec assume_role_params(bitstring(), bitstring(), integer()) :: Tesla.Env.param()
+  def assume_role_params(role_arn, role_session_name, duration) do
     [
       {"Action", "AssumeRole"},
       {"RoleArn", role_arn},
-      {"RoleSessionName", "booklet"}
+      {"RoleSessionName", role_session_name},
+      {"DurationSeconds", Integer.to_string(duration)}
     ]
   end
 
