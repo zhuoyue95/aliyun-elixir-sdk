@@ -24,7 +24,7 @@ defmodule Aliyun.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:tesla, "~> 1.0"},
       {:hackney, "~> 1.6"},
       {:jason, "~> 1.0"},
