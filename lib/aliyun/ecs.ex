@@ -30,59 +30,41 @@ defmodule Aliyun.ECS do
   # https://help.aliyun.com/document_detail/25557.html?spm=a2c4g.11186623.6.985.698d2612FHxxdj
 
   def describe_security_groups(region_id) do
-    query =
-      [
-        {"Action", "DescribeSecurityGroups"},
-        {"RegionId", region_id}
-      ]
-      |> query_params()
-
-    get("/", query: query)
+    perform_get_request("DescribeSecurityGroups", [{"RegionId", region_id}])
   end
 
   def revoke_security_group(permission) do
-    query =
-      [
-        {"Action", "RevokeSecurityGroup"},
-        {"RegionId", permission.region_id},
-        {"SecurityGroupId", permission.security_group_id},
-      ]
-      |> query_params()
-
-    get("/", query: query)
+    perform_get_request("RevokeSecurityGroup", [
+      {"RegionId", permission.region_id},
+      {"SecurityGroupId", permission.security_group_id}
+    ])
   end
 
   def authorize_security_group(permission) do
-    query =
-      [
-        {"Action", "AuthorizeSecurityGroup"},
-        {"RegionId", permission.region_id},
-        {"SecurityGroupId", permission.security_group_id},
-        {"IpProtocol", permission.ip_protocol},
-        {"PortRange", permission.port_range},
-        {"NicType", permission.nic_type},
-        {"Policy", permission.policy},
-        {"SourceCidrIp", permission.source_cidr_ip}
-      ]
-      |> query_params()
-
-    get("/", query: query)
+    perform_get_request("AuthorizeSecurityGroup", [
+      {"RegionId", permission.region_id},
+      {"SecurityGroupId", permission.security_group_id},
+      {"IpProtocol", permission.ip_protocol},
+      {"PortRange", permission.port_range},
+      {"NicType", permission.nic_type},
+      {"Policy", permission.policy},
+      {"SourceCidrIp", permission.source_cidr_ip}
+    ])
   end
 
   def describe_security_group_attribute(region_id, security_group_id, direction) do
-    query =
-      [
-        {"Action", "DescribeSecurityGroupAttribute"},
-        {"RegionId", region_id},
-        {"SecurityGroupId", security_group_id},
-        {"Direction", direction}
-      ]
-      |> query_params()
-
-    get("/", query: query)
+    perform_get_request("DescribeSecurityGroupAttribute", [
+      {"RegionId", region_id},
+      {"SecurityGroupId", security_group_id},
+      {"Direction", direction}
+    ])
   end
 
-  def query_params(action_params) do
+  defp perform_get_request(action, params) do
+    get("/", query: query_params([{"Action", action} | params]))
+  end
+
+  defp query_params(action_params) do
     now_datetime =
       Timex.now()
       |> Timex.shift(hours: 0)
@@ -114,7 +96,7 @@ defmodule Aliyun.ECS do
     ]
   end
 
-  def gen_signature(params, _now_datetime) do
+  defp gen_signature(params, _now_datetime) do
     canonicalized_resource =
       (params.public ++ params.action)
       |> gen_canonicalized_resource()
@@ -131,7 +113,7 @@ defmodule Aliyun.ECS do
     |> Map.put(:signature, signature)
   end
 
-  def gen_canonicalized_resource(query_parameters) do
+  defp gen_canonicalized_resource(query_parameters) do
     query_parameters
     |> Enum.sort()
     |> Enum.map(fn {name, value} ->
