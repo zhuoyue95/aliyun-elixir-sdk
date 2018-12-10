@@ -30,7 +30,10 @@ defmodule Aliyun.ECS do
   # https://help.aliyun.com/document_detail/25557.html?spm=a2c4g.11186623.6.985.698d2612FHxxdj
 
   def describe_security_groups(region_id) do
-    perform_get_request("DescribeSecurityGroups", [{"RegionId", region_id}])
+    perform_get_request("DescribeSecurityGroups", [
+      {"RegionId", region_id},
+      {"PageSize", 50}
+    ])
   end
 
   def revoke_security_group(permission) do
