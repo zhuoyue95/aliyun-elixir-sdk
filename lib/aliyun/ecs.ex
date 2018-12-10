@@ -32,7 +32,7 @@ defmodule Aliyun.ECS do
   def describe_security_groups(region_id) do
     perform_get_request("DescribeSecurityGroups", [
       {"RegionId", region_id},
-      {"PageSize", 50}
+      {"PageSize", "50"}
     ])
   end
 
