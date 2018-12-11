@@ -11,24 +11,11 @@ defmodule Aliyun.ECS do
   @access_key_id Application.get_env(:aliyun, :access_key_id)
   @access_key_secret Application.get_env(:aliyun, :access_key_secret)
 
-  @type permission :: %{
-          region_id: bitstring(),
-          security_group_id: bitstring(),
-          description: bitstring(),
-          ip_protocol: bitstring(),
-          port_range: bitstring(),
-          nic_type: bitstring(),
-          policy: bitstring(),
-          dest_cidr_ip: bitstring(),
-          source_cidr_ip: bitstring(),
-          # source_group_id: bitstring(),
-          priority: integer
-        }
-
   # https://help.aliyun.com/document_detail/25490.html?spm=a2c4g.11186623.2.15.5b41aa17C9B1su#EcsApiCommonParameters-commonRequestParameters
   # https://help.aliyun.com/document_detail/25492.html?spm=a2c4g.11186623.2.14.e5be6518T87Pnt#EcsApiSignature
   # https://help.aliyun.com/document_detail/25557.html?spm=a2c4g.11186623.6.985.698d2612FHxxdj
 
+  @spec describe_security_groups(bitstring()) :: {:error, any()} | {:ok, Tesla.Env.t()}
   def describe_security_groups(region_id) do
     perform_get_request("DescribeSecurityGroups", [
       {"RegionId", region_id},
@@ -39,7 +26,13 @@ defmodule Aliyun.ECS do
   def revoke_security_group(permission) do
     perform_get_request("RevokeSecurityGroup", [
       {"RegionId", permission.region_id},
-      {"SecurityGroupId", permission.security_group_id}
+      {"SecurityGroupId", permission.security_group_id},
+      {"IpProtocol", permission.ip_protocol},
+      {"PortRange", permission.port_range},
+      {"NicType", permission.nic_type},
+      {"Policy", permission.policy},
+      {"SourceCidrIp", permission.source_cidr_ip},
+      {"DestCidrIp", permission.dest_cidr_ip}
     ])
   end
 
@@ -51,7 +44,10 @@ defmodule Aliyun.ECS do
       {"PortRange", permission.port_range},
       {"NicType", permission.nic_type},
       {"Policy", permission.policy},
-      {"SourceCidrIp", permission.source_cidr_ip}
+      {"SourceCidrIp", permission.source_cidr_ip},
+      {"DestCidrIp", permission.dest_cidr_ip},
+      {"Description", permission.description},
+      {"Priority", Integer.to_string(permission.priority)}
     ])
   end
 
