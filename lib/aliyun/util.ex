@@ -21,4 +21,10 @@ defmodule Aliyun.Util do
   def percent_encode(str) do
     URI.encode(str, &URI.char_unreserved?/1)
   end
+
+  def stringify_headers_individually(headers) do
+    Enum.map(headers, fn {name, value} ->
+      percent_encode(name) <> "=" <> percent_encode(value)
+    end)
+  end
 end
