@@ -15,6 +15,8 @@ defmodule Aliyun.OSS do
     Tesla.client(middleware, Tesla.Adapter.Hackney)
   end
 
+  # Public APIs
+
   # https://help.aliyun.com/document_detail/31978.html
   @spec put_object(String.t(), String.t(), String.t(), String.t(), [String.t()], :private | :public_read) :: Tesla.Env.result()
   def put_object(file_path, filename, content_type, bucket, key, permission) do
@@ -37,8 +39,10 @@ defmodule Aliyun.OSS do
       {:error, reason} ->
         {:error, {:file_read_error, reason}}
     end
-
   end
+
+
+  # Internals
 
   @spec gen_headers(Aliyun.OSS.Object.t(), String.t()) :: [{String.t(), String.t()}]
   def gen_headers(%Aliyun.OSS.Object{} = object, http_verb) do
