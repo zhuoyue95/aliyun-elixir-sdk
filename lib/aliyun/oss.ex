@@ -18,22 +18,26 @@ defmodule Aliyun.OSS do
   # https://help.aliyun.com/document_detail/31978.html
   @spec put_object(String.t(), String.t(), String.t(), String.t(), [String.t()], :private | :public_read) :: Tesla.Env.result()
   def put_object(file_path, filename, content_type, bucket, key, permission) do
-    headers =
-      %Aliyun.OSS.Object{
-        path: file_path,
-        filename: filename,
-        bucket: bucket,
-        key: key,
-        content_type: content_type,
-        permission: permission
-      }
-      |> gen_headers("PUT")
+    with {:ok, content} <- File.read(file_path) do
+      headers =
+        %Aliyun.OSS.Object{
+          path: file_path,
+          filename: filename,
+          bucket: bucket,
+          key: key,
+          content_type: content_type,
+          permission: permission
+        }
+        |> gen_headers("PUT")
 
-    client = client(bucket)
+      client = client(bucket)
 
-    {:ok, content} = File.read(file_path)
+      put(client, "/#{Enum.join(key, "/")}", content, headers: headers)
+    else
+      {:error, reason} ->
+        {:error, {:file_read_error, reason}}
+    end
 
-    put(client, "/#{Enum.join(key, "/")}", content, headers: headers)
   end
 
   @spec gen_headers(Aliyun.OSS.Object.t(), String.t()) :: [{String.t(), String.t()}]
@@ -89,8 +93,7 @@ defmodule Aliyun.OSS do
 
     string_to_sign =
       [
-        http_verb,
-        # :crypto.hash(:md5, content) |> Base.encode64(),
+        http_verb, # :crypto.hash(:md5, content) |> Base.encode64()
         "",
         object.content_type, #"application/x-www-form-urlencoded"
         gmt_formatted_time,

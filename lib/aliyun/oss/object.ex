@@ -4,8 +4,7 @@ defmodule Aliyun.OSS.Object do
             bucket: nil,
             key: [],
             content_type: nil,
-            permission: :private,
-            signature: nil
+            permission: :private
 
   @type t :: %__MODULE__{
           path: String.t(),
@@ -13,7 +12,6 @@ defmodule Aliyun.OSS.Object do
           bucket: String.t(),
           key: [String.t()],
           content_type: String.t(),
-          permission: :private | :public_read,
-          signature: String.t()
+          permission: :private | :public_read
         }
 end
